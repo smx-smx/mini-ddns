@@ -28,6 +28,8 @@ enum state state = INITIAL;
 //#define STR_EQ(a, b) (strncmp((a), (b), strlen(b)) == 0)
 #define STR_EQ(a, b) (strcmp((a), (b)) == 0)
 
+char *last_ipaddr = NULL;
+
 int main(int argc, char *argv[]){
 	char buf[256];
 	char *parts[MAX_PARTS];
@@ -97,6 +99,18 @@ int main(int argc, char *argv[]){
 				){
 					puts("got new ip");
 					printf("New IP: %s, invoking " COMMAND "\n", parts[3]);
+
+
+					if(last_ipaddr != NULL && !strcmp(parts[3], last_ipaddr)){
+						// abort update, same IP as the last one
+						printf("aborting update, Old IP %s == New IP %s\n", last_ipaddr, parts[3]);
+						break;
+					}
+
+					if(last_ipaddr != NULL){
+						free(last_ipaddr); last_ipaddr = NULL;
+					}
+					last_ipaddr = strdup(parts[3]);
 
 					pid_t pid = fork();
 					if(pid == 0){
